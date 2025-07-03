@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
 
+
 class ApprovalHistory(models.Model):
     """
     Approval History Model
@@ -26,12 +27,19 @@ class ApprovalHistory(models.Model):
         model_field='res_model',
         help='ID of the document being approved')
 
+    approval_comment = fields.Text(
+        string='Approval Comment',
+        help='Comment provided by the approver')
+
     approval_item_ids = fields.One2many(
         comodel_name='approval.item',
         inverse_name='approval_history_id',
-        string='Approval Stages',
-        help='Approval stages associated with this approval process')
+        string='Approval Item',
+        help='Approval Item associated with this approval process')
 
+    def compute_approval_status(self):
+        self.ensure_one()
+        return all(item.approval_status == 'approved' for item in self.approval_item_ids)
 
 class ApprovalItem(models.Model):
     """
@@ -41,6 +49,13 @@ class ApprovalItem(models.Model):
     _name = "approval.item"
     _description = "Approval Stage"
     _order = 'sequence, id'
+
+    approval_thread_id = fields.Many2one(
+        comodel_name='approval.thread',
+        string='Approval Thread',
+        ondelete='cascade',
+        required=True,
+        help='Related approval thread record')
 
     approval_history_id = fields.Many2one(
         comodel_name='approval.history',
