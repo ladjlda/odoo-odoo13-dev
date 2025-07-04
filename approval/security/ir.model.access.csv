@@ -1,0 +1,4 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_approval_thread_user","approval.thread user","model_approval_thread","base.group_user",1,1,1,1
+"access_approval_history_user","approval.history user","model_approval_history","base.group_user",1,1,1,1
+"access_approval_item_user","approval.item user","model_approval_item","base.group_user",1,1,1,1

@@ -1,5 +1,5 @@
 {
-    'name': 'Approval',
+    'name': 'Approval Test Form',
     'version': '1.0',
     'summary': 'Approval Management System',
     'description': 'Module for managing approval workflows',
@@ -7,10 +7,10 @@
     'website': '',
     'license': 'LGPL-3',
     'category': 'Tools',
-    'depends': ['base'],
+    'depends': ['base', 'approval'],
     'data': [
         'security/ir.model.access.csv',
-        'views/approval_history_views.xml',
+        'views/approval_test_form_views.xml',
     ],
     'demo': [],
     'installable': True,
@@ -24,5 +24,5 @@
     'js': [],
     'css': [],
     'images': [],
-    'sequence': 100,
+    'sequence': 1,
 }

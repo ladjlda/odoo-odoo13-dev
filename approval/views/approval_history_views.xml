@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="view_tree_approval_history">
+        <field name="name">Approval History Tree</field>
+        <field name="model">approval.history</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="reference"/>
+                <field name="res_model"/>
+                <field name="res_id"/>
+                <field name="active"/>
+                <field name="is_seq"/>
+                <field name="approval_comment"/>
+                <field name="approval_item_ids"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_form_approval_history">
+        <field name="name">Approval History Form</field>
+        <field name="model">approval.history</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="reference"/>
+                        <field name="res_model"/>
+                        <field name="res_id"/>
+                        <field name="active"/>
+                        <field name="is_seq"/>
+                        <field name="approval_comment"/>
+                        <field name="approval_item_ids">
+                            <tree>
+                                <field name="sequence"/>
+                                <field name="role"/>
+                                <field name="group_ids" widget="many2many_tags"/>
+                                <field name="user_ids" widget="many2many_tags"/>
+                                <field name="approval_status"/>
+                                <field name="is_authorized_approval"/>
+                                <field name="approval_comment"/>
+                                <button type="object"
+                                        string="approval"
+                                        name="action_approve"
+                                        class="btn btn-primary o_form_button_edit"
+                                        attrs="{'invisible':['|',('approval_status','=','approved'),('is_authorized_approval','=', False)]}"
+                                />
+                                <button type="object"
+                                        string="pending"
+                                        name="action_pending"
+                                        class="btn btn-primary o_form_button_edit"
+                                        attrs="{'invisible':['|',('approval_status','=','pending'),('is_authorized_approval','=', False)]}"
+                                />
+                                <button type="object"
+                                        string="reject"
+                                        name="action_reject"
+                                        class="btn btn-primary o_form_button_edit"
+                                        attrs="{'invisible':['|',('approval_status','=','rejected'),('is_authorized_approval','=', False)]}"
+                                />
+                                <field name="user_id"/>
+                                <field name="approval_date"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="act_window_approval_history">
+        <field name="name">Approval History</field>
+        <field name="res_model">approval.history</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="main_menu_approval_history" name="Approval"/>
+
+    <menuitem id="menu_approval_history" name="Approval History"
+              parent="main_menu_approval_history"
+              action="act_window_approval_history"
+    />
+</odoo>

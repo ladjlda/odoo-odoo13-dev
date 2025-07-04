@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="view_tree_approval_test_form">
+        <field name="name">Approval Test Form Tree</field>
+        <field name="model">approval.test.form</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_form_approval_test_form">
+        <field name="name">Approval Test Form Form</field>
+        <field name="model">approval.test.form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                    <group>
+                        <field name="approval_is_passed"/>
+                        <field name="approval_comment"/>
+                        <field name="approval_item_ids"/>
+                        <field name="approval_history_ids"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="act_window_approval_test_form">
+        <field name="name">Approval Test Form</field>
+        <field name="res_model">approval.test.form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="main_menu_approval_test_form" name="Approval Test Form"/>
+
+    <menuitem id="menu_approval_test_form" name="Approval Test Form"
+              parent="main_menu_approval_test_form"
+              action="act_window_approval_test_form"
+    />
+</odoo>
