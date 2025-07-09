@@ -15,6 +15,8 @@ class ApprovalHistory(models.Model):
         readonly=True,
         help='Unique reference identifier for this approval history')
 
+    name = fields.Char(string="approval group name")
+
     res_model = fields.Char(
         string='Related Document Model',
         required=True,
@@ -31,8 +33,6 @@ class ApprovalHistory(models.Model):
         string='Approval Comment',
         help='Comment provided by the approver')
 
-    active = fields.Boolean(string='Active', default=True, readonly=True)
-
     is_seq = fields.Boolean(string='is sequence approval', default=False)
 
     approval_item_ids = fields.One2many(
@@ -41,14 +41,16 @@ class ApprovalHistory(models.Model):
         string='Approval Item',
         help='Approval Item associated with this approval process')
 
+    def name_get(self):
+        res = []
+        for rec in self:
+            res.append("{}-{}".format(rec.reference, rec.name))
+        return res
+
     def compute_approval_status(self):
-        self.ensure_one()
         return all(item.approval_status == 'approved' for item in self.approval_item_ids)
 
-    def _insert_items(self, res_model, res_id, comment, items, **kwargs):
-        self.sudo().create(
-            {'res_model': res_model, 'res_id': res_id, 'approval_comment': comment, 'approval_item_ids': items,
-             'is_seq': kwargs.get('is_seq', False)})
+
 
     @api.model
     def create(self, vals_list):
@@ -140,14 +142,21 @@ class ApprovalItem(models.Model):
         for rec in self:
             rec.is_authorized_approval = rec._is_user_authorized_approval()
 
-    def _is_user_authorized_approval(self):
-        """
-        检查当前用户是否是授权的审批人
-        返回True/False
-        """
-        self.ensure_one()
-        current_user = self.env.user
-        return current_user in self.user_ids or any(g in current_user.groups_id for g in self.group_ids)
+   def _is_user_authorized_approval(self):
+    """
+    检查当前用户是否是授权的审批人
+    使用Odoo内置方法优化群组检查
+    返回True/False
+    """
+    current_user = self.env.user
+    # 检查用户是否在user_ids中
+    user_check = current_user in self.user_ids
+    # 使用has_group方法检查用户是否属于任何授权群组
+    group_check = any(
+        current_user.has_group(f"{g._original_module}.{g.xml_id.split('.')[1]}")
+        for g in self.group_ids
+    )
+    return user_check or group_check
 
     def _update_approval_status(self, status):
         """
