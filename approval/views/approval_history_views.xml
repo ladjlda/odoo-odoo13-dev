@@ -6,10 +6,9 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="reference"/>
-                <field name="res_model"/>
-                <field name="res_id"/>
-                <field name="active"/>
-                <field name="is_seq"/>
+                <field name="res_model" groups="base.group_no_one" optional="hide"/>
+                <field name="res_id" groups="base.group_no_one" optional="hide"/>
+                <field name="is_rule_sequence"/>
                 <field name="approval_comment"/>
                 <field name="approval_item_ids"/>
             </tree>
@@ -23,45 +22,50 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="reference"/>
-                        <field name="res_model"/>
-                        <field name="res_id"/>
-                        <field name="active"/>
-                        <field name="is_seq"/>
-                        <field name="approval_comment"/>
-                        <field name="approval_item_ids">
-                            <tree>
+                        <field name="is_lock"/>
+                        <field name="name" attrs="{'readonly':[('is_lock','=',True)]}"/>
+                        <field name="reference" attrs="{'readonly':[('is_lock','=',True)]}"/>
+                        <field name="res_id"
+                               attrs="{'invisible':[('is_lock','=',False)], 'readonly':[('is_lock','=',True)]}"
+                               groups="base.group_no_one"/>
+                        <field name="res_model"
+                               attrs="{'invisible':[('is_lock','=',False)], 'readonly':[('is_lock','=',True)]}"
+                               groups="base.group_no_one"/>
+                        <field name="is_rule_sequence" attrs="{'readonly':[('is_lock','=',True)]}"/>
+                        <field name="approval_comment" attrs="{'readonly':[('is_lock','=',True)]}"/>
+                        <field name="approval_item_ids" attrs="{'readonly':[('is_lock','=',True)]}">
+                            <tree order="sequence asc" editable="bottom">
                                 <field name="sequence"/>
                                 <field name="role"/>
                                 <field name="group_ids" widget="many2many_tags"/>
                                 <field name="user_ids" widget="many2many_tags"/>
+                                <field name="approval_comment" readonly="1"/>
                                 <field name="approval_status"/>
-                                <field name="is_authorized_approval"/>
-                                <field name="approval_comment"/>
-                                <button type="object"
-                                        string="approval"
-                                        name="action_approve"
-                                        class="btn btn-primary o_form_button_edit"
-                                        attrs="{'invisible':['|',('approval_status','=','approved'),('is_authorized_approval','=', False)]}"
-                                />
-                                <button type="object"
-                                        string="pending"
-                                        name="action_pending"
-                                        class="btn btn-primary o_form_button_edit"
-                                        attrs="{'invisible':['|',('approval_status','=','pending'),('is_authorized_approval','=', False)]}"
-                                />
-                                <button type="object"
-                                        string="reject"
-                                        name="action_reject"
-                                        class="btn btn-primary o_form_button_edit"
-                                        attrs="{'invisible':['|',('approval_status','=','rejected'),('is_authorized_approval','=', False)]}"
-                                />
                                 <field name="user_id"/>
                                 <field name="approval_date"/>
                             </tree>
+                            <form>
+                                <sheet>
+                                    <group>
+                                        <field name="sequence"/>
+                                        <field name="role"/>
+                                        <field name="group_ids" widget="many2many_tags"/>
+                                        <field name="user_ids" widget="many2many_tags"/>
+                                        <field name="approval_comment" readonly="1"/>
+                                        <field name="approval_status"/>
+                                        <field name="user_id"/>
+                                        <field name="approval_date"/>
+                                    </group>
+                                </sheet>
+                            </form>
                         </field>
                     </group>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                </div>
             </form>
         </field>
     </record>

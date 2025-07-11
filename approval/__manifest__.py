@@ -7,10 +7,11 @@
     'website': '',
     'license': 'LGPL-3',
     'category': 'Tools',
-    'depends': ['base'],
+    'depends': ['base','mail'],
     'data': [
         'security/ir.model.access.csv',
         'views/approval_history_views.xml',
+        'views/approval_history_wizard_views.xml',
     ],
     'demo': [],
     'installable': True,

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="view_form_approval_history_wizard">
+        <field name="name">Approval History Wizard Form</field>
+        <field name="model">approval.history</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="is_rule_sequence"/>
+                        <field name="approval_comment"/>
+                    </group>
+                    <notebook>
+                        <page string="流程">
+                            <group>
+                                <field name="approval_item_ids" nolabel="1">
+                                    <tree order="sequence asc" editable="bottom">
+                                        <field name="sequence"/>
+                                        <field name="role"/>
+                                        <field name="group_ids" widget="many2many_tags"/>
+                                        <field name="user_ids" widget="many2many_tags"/>
+                                        <field name="approval_comment" readonly="1"/>
+                                        <field name="approval_status"/>
+                                        <field name="user_id"/>
+                                        <field name="approval_date"/>
+                                    </tree>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <field name="sequence"/>
+                                                <field name="role"/>
+                                                <field name="group_ids" widget="many2many_tags"/>
+                                                <field name="user_ids" widget="many2many_tags"/>
+                                                <field name="approval_status"/>
+                                                <field name="approval_comment" readonly="1"/>
+                                                <field name="user_id"/>
+                                                <field name="approval_date"/>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -7,7 +7,7 @@
     'website': '',
     'license': 'LGPL-3',
     'category': 'Tools',
-    'depends': ['base', 'approval'],
+    'depends': ['base', 'approval','mail'],
     'data': [
         'security/ir.model.access.csv',
         'views/approval_test_form_views.xml',
