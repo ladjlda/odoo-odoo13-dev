@@ -6,4 +6,4 @@ class ApprovalTestForm(models.Model):
     _name = "approval.test.form"
     _inherit = ['approval.thread', 'mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Name')
+    name = fields.Char(string='Name', tracking=True)

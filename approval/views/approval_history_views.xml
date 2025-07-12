@@ -33,32 +33,79 @@
                                groups="base.group_no_one"/>
                         <field name="is_rule_sequence" attrs="{'readonly':[('is_lock','=',True)]}"/>
                         <field name="approval_comment" attrs="{'readonly':[('is_lock','=',True)]}"/>
-                        <field name="approval_item_ids" attrs="{'readonly':[('is_lock','=',True)]}">
-                            <tree order="sequence asc" editable="bottom">
-                                <field name="sequence"/>
-                                <field name="role"/>
-                                <field name="group_ids" widget="many2many_tags"/>
-                                <field name="user_ids" widget="many2many_tags"/>
-                                <field name="approval_comment" readonly="1"/>
-                                <field name="approval_status"/>
-                                <field name="user_id"/>
-                                <field name="approval_date"/>
-                            </tree>
-                            <form>
-                                <sheet>
-                                    <group>
-                                        <field name="sequence"/>
-                                        <field name="role"/>
-                                        <field name="group_ids" widget="many2many_tags"/>
-                                        <field name="user_ids" widget="many2many_tags"/>
-                                        <field name="approval_comment" readonly="1"/>
-                                        <field name="approval_status"/>
-                                        <field name="user_id"/>
-                                        <field name="approval_date"/>
-                                    </group>
-                                </sheet>
-                            </form>
-                        </field>
+
+                    </group>
+                    <field name="approval_item_ids" attrs="{'readonly':[('is_lock','=',True)]}">
+                        <tree order="sequence asc" editable="bottom">
+                            <field name="sequence"/>
+                            <field name="role"/>
+                            <field name="group_ids" widget="many2many_tags"/>
+                            <field name="user_ids" widget="many2many_tags"/>
+                            <field name="approval_opinion" class="o_column_sortable2" readonly="1"/>
+                            <field name="approval_status"/>
+                            <field name="user_id"/>
+                            <field name="approval_date"/>
+                        </tree>
+                        <form>
+                            <sheet>
+                                <group>
+                                    <field name="sequence"/>
+                                    <field name="role"/>
+                                    <field name="group_ids" widget="many2many_tags"/>
+                                    <field name="user_ids" widget="many2many_tags"/>
+                                    <field name="approval_opinion" readonly="1"/>
+                                    <field name="approval_status"/>
+                                    <field name="user_id"/>
+                                    <field name="approval_date"/>
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_tree_approval_item">
+        <field name="name">Approval Item Tree</field>
+        <field name="model">approval.item</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence"/>
+                <field name="role"/>
+                <field name="group_ids" widget="many2many_tags"/>
+                <field name="is_authorized_approval"/>
+                <field name="user_ids" widget="many2many_tags"/>
+                <field name="approval_opinion" class="o_column_sortable2"/>
+                <field name="approval_status"/>
+                <field name="user_id"/>
+                <field name="approval_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_form_approval_item">
+        <field name="name">Approval Item Form</field>
+        <field name="model">approval.item</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="approval_history_id" groups="base.group_no_one"/>
+                        <field name="sequence"/>
+                        <field name="role"/>
+                        <field name="group_ids" widget="many2many_tags"/>
+                        <field name="is_authorized_approval"/>
+                        <field name="user_ids" widget="many2many_tags"/>
+                        <field name="approval_opinion"/>
+                        <field name="approval_status"/>
+                        <field name="user_id"/>
+                        <field name="approval_date"/>
                     </group>
                 </sheet>
                 <div class="oe_chatter">
@@ -70,9 +117,16 @@
         </field>
     </record>
 
+
     <record model="ir.actions.act_window" id="act_window_approval_history">
         <field name="name">Approval History</field>
         <field name="res_model">approval.history</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="act_window_approval_item">
+        <field name="name">Approval Item</field>
+        <field name="res_model">approval.item</field>
         <field name="view_mode">tree,form</field>
     </record>
 
@@ -81,5 +135,10 @@
     <menuitem id="menu_approval_history" name="Approval History"
               parent="main_menu_approval_history"
               action="act_window_approval_history"
+    />
+
+    <menuitem id="menu_approval_item" name="Approval Item"
+              parent="main_menu_approval_history"
+              action="act_window_approval_item"
     />
 </odoo>

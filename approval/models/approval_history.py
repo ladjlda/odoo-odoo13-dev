@@ -12,7 +12,8 @@ class ApprovalHistory(models.Model):
     _description = "Approval History"
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    is_lock = fields.Boolean(string='Locked', default=False, readonly=True, tracking=True, help="创建后上锁，无法修改任何数据")
+    is_lock = fields.Boolean(string='Locked', default=False, readonly=True, tracking=True,
+                             help="创建后上锁，无法修改任何数据")
 
     reference = fields.Char(
         string='Reference',
@@ -59,10 +60,11 @@ class ApprovalHistory(models.Model):
         for rec in self:
             if rec.is_rule_sequence and rec.approval_item_ids and len(rec.approval_item_ids) > 1:
                 seqs = rec.approval_item_ids.mapped('sequence')
-                print(seqs)
-                for i in range(len(seqs)-1):
-                    if seqs[i] + 1 != seqs[i+1]:
-                        raise UserError(_('The sequence numbers of the approval process must increase in sequence and have an interval difference of 1'))
+                # print(seqs)
+                for i in range(len(seqs) - 1):
+                    if seqs[i] + 1 != seqs[i + 1]:
+                        raise UserError(
+                            _('The sequence numbers of the approval process must increase in sequence and have an interval difference of 1'))
 
     @api.model
     def create(self, vals_list):
@@ -77,10 +79,10 @@ class ApprovalHistory(models.Model):
     # [0, 'virtual_684', {'sequence': 2, 'approval_thread_id': False, 'approval_history_id': False, 'role': '初审', 'group_ids': [[6, False, [10, 11]]], 'user_ids': [[6, False, [2]]], 'approval_comment': '1234556'}]]}
     def write(self, vals):
         print(vals)
-        if 'is_rule_sequence' in vals.keys() and vals['is_rule_sequence']:
-            self._check_approval_item_ids_is_sequence()
+        # if 'is_rule_sequence' in vals.keys() and vals['is_rule_sequence']:
+        #     self._check_approval_item_ids_is_sequence()
         res = super(ApprovalHistory, self).write(vals)
-        if 'is_rule_sequence' not in vals.keys() and self.is_rule_sequence:
+        if self.is_rule_sequence:
             self._check_approval_item_ids_is_sequence()
         return res
 
@@ -92,7 +94,9 @@ class ApprovalItem(models.Model):
     """
     _name = "approval.item"
     _description = "Approval Stage"
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'sequence, id'
+    _rec_name = 'sequence'
 
     approval_thread_id = fields.Many2one(
         comodel_name='approval.thread',
@@ -110,11 +114,13 @@ class ApprovalItem(models.Model):
         string='Sequence',
         default=1,
         required=True,
+        tracking=True,
         help='Defines the order of approval stages')
 
     role = fields.Char(
         string='role',
         required=True,
+        tracking=True,
         help='role of this approval stage')
 
     group_ids = fields.Many2many(
@@ -123,9 +129,11 @@ class ApprovalItem(models.Model):
         column1='approval_item_id',
         column2='group_id',
         string='Authorized Groups',
+        tracking=True,
         help='User groups that can approve this stage')
 
     is_authorized_approval = fields.Boolean(string='Authorized', default=False,
+                                            tracking=True,
                                             compute='_compute_is_authorized_approval')
 
     user_ids = fields.Many2many(
@@ -134,10 +142,11 @@ class ApprovalItem(models.Model):
         column1='approval_item_id',
         column2='user_id',
         string='Authorized user',
+        tracking=True,
         help='Specific users who can approve this stage')
 
     # 审批意见  审批意见可以为空
-    approval_comment = fields.Text(string='Approval Comment', tracking=True)
+    approval_opinion = fields.Text(string='Approval Opinion', tracking=True)
 
     # 审批状态
     approval_status = fields.Selection(selection=[
@@ -152,6 +161,7 @@ class ApprovalItem(models.Model):
         comodel_name='res.users',
         string='Approver',
         readonly=True,
+        tracking=True,
         help='User who approved this stage')
 
     # 审批时间
@@ -206,10 +216,14 @@ class ApprovalItem(models.Model):
         if self.approval_history_id.is_rule_sequence:
             rel_approval_item = self.approval_history_id.approval_item_ids
             current_seq = self.sequence
-            unapproved_item_ids = rel_approval_item.filtered(lambda x: x.sequence < current_seq and not x.approval_status == 'approved')
+            unapproved_item_ids = rel_approval_item.filtered(
+                lambda x: x.sequence < current_seq and not x.approval_status == 'approved')
             if current_seq != 1 and unapproved_item_ids:
-                result = ["{}-{}".format(unapproved_item_id.sequence, unapproved_item_id.role) for unapproved_item_id in unapproved_item_ids]
-                raise UserError(_("Currently, it is in the sequential approval flow mode.\nThe previous process has not been approved.\n{}".format('\n'.join(result))))
+                result = ["{}-{}".format(unapproved_item_id.sequence, unapproved_item_id.role) for unapproved_item_id in
+                          unapproved_item_ids]
+                raise UserError(
+                    _("Currently, it is in the sequential approval flow mode.\nThe previous process has not been approved.\n{}".format(
+                        '\n'.join(result))))
         if self._is_user_authorized_approval():
             return self._update_approval_status('approved')
         return False
@@ -227,3 +241,23 @@ class ApprovalItem(models.Model):
         if self._is_user_authorized_approval():
             return self._update_approval_status('rejected')
         return False
+
+    def action_set_opinion(self):
+        self.ensure_one()
+        return {
+            'name': '审批意见',
+            'type': 'ir.actions.act_window',
+            'res_model': 'approval.item',
+            'res_id': self.id,
+            'view_mode': 'form',  # 指定form视图
+            'view_id': self.env.ref('approval.view_form_approval_item_opinion_wizard').id,  # 指定具体form视图的XML ID
+            'target': 'new',
+            'context': {'default_approval_opinion': self.approval_opinion}
+        }
+
+    def write(self, vals):
+        print('条目更新', vals)
+
+        res = super(ApprovalItem, self).write(vals)
+
+        return res

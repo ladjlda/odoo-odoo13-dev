@@ -1,0 +1,6 @@
+.o_column_sortable2 {
+    display: block !important;
+     overflow: hidden !important;
+     white-space: nowrap !important;
+     text-overflow: ellipsis !important;
+}

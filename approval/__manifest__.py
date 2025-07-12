@@ -10,6 +10,7 @@
     'depends': ['base','mail'],
     'data': [
         'security/ir.model.access.csv',
+        'views/templates.xml',
         'views/approval_history_views.xml',
         'views/approval_history_wizard_views.xml',
     ],

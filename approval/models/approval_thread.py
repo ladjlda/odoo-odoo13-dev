@@ -86,8 +86,7 @@ class ApprovalThread(models.AbstractModel):
     @api.onchange('approval_history_id')
     def _compute_approval_item_ids(self):
         """
-        approval_history_id变动时，会计算出approval_history_id中原始条目，复制一份到当前表单的条目中
-        计算 approval_item_ids 字段的值
+        approval_history_id变动时，会计算出approval_history_id中原始条目，将原始条目的ids关联到approval_item_ids 字段
         """
         for rec in self:
             # 获取最新创建的approval.history记录
@@ -108,25 +107,15 @@ class ApprovalThread(models.AbstractModel):
     # ------------------------------------------------------
     # History API
     # ------------------------------------------------------
-    def Approval_add_new_item(self, comment, items, **kwargs):
-        """
-        'items': [[0, 0, {'sequence': 1, 'approval_thread_id': False, 'approval_history_id': False, '
-                            role': '起草', 'group_ids': [[6, False, [14, 13]]], 'user_ids': [[6, False, [2]]],
-                            'approval_comment': '12345'}], ..., ...]
-        """
-        res = self._insert_items(self._name, self.id, comment, items, **kwargs)
-        return res
-
-    def _insert_items(self, res_model, res_id, comment, items, **kwargs):
-        res = self.env['approval.history'].sudo().create(
-            {'res_model': res_model, 'res_id': res_id, 'approval_comment': comment, 'approval_item_ids': items,
-             'is_seq': kwargs.get('is_seq', False)})
-        return res
+    def action_update_approval_item_ids(self):
+        self.ensure_one()
+        return self._compute_approval_item_ids()
 
     def action_self_by_wizard(self):
         self.ensure_one()
         if not self.approval_history_id:
             raise UserError(_('请选择 Approval History'))
+
         return {
             'name': '修改审批',
             'type': 'ir.actions.act_window',
@@ -136,53 +125,8 @@ class ApprovalThread(models.AbstractModel):
             'view_id': self.env.ref('approval.view_form_approval_history_wizard').id,  # 指定具体form视图的XML ID
             'target': 'new',
             # 'context': {
-            #     'default_approval_history_id': self.approval_history_id.id if self.approval_history_id else False,
-            #     'default_approval_history_ids': [
-            #         (6, 0, self.approval_history_ids.ids if self.approval_history_id else False)],
-            #     'default_is_wizard': True  # 添加标记表示这是向导模式
-            # }
-            # 'context': {
             #     'default_is_sequence': self.approval_history_id.is_sequence,
             #     'default_approval_comment': self.approval_history_id.approval_comment,
             #     'default_approval_item_ids': [(6, 0, self.approval_history_id.approval_item_ids.ids)]
             # }
         }
-
-    # def message_unsubscribe(self, partner_ids=None, channel_ids=None):
-    #     """ Remove partners from the records followers. """
-    #     # not necessary for computation, but saves an access right check
-    #     if not partner_ids and not channel_ids:
-    #         return True
-    #     user_pid = self.env.user.partner_id.id
-    #     if not channel_ids and set(partner_ids) == set([user_pid]):
-    #         self.check_access_rights('read')
-    #         self.check_access_rule('read')
-    #     else:
-    #         self.check_access_rights('write')
-    #         self.check_access_rule('write')
-    #     self.env['mail.followers'].sudo().search([
-    #         ('res_model', '=', self._name),
-    #         ('res_id', 'in', self.ids),
-    #         '|',
-    #         ('partner_id', 'in', partner_ids or []),
-    #         ('channel_id', 'in', channel_ids or [])
-    #     ]).unlink()
-
-# class ApprovalThreadWizard(models.AbstractModel):
-#     """
-#     Approval Thread Wizard Model
-#     add or delete history and items
-#     """
-#     _name = "approval.thread.wizard"
-#     _description = "Approval Thread Wizard"
-
-#     # 审批历史ID
-#     approval_history_id = fields.Many2one(
-#         comodel_name='approval.history',
-#         string='Approval History', readonly=True,
-#         help='Approval History associated with this approval process')
-
-#     # 审批目的
-#     approval_comment = fields.Text(
-#         string='Approval Comment',
-#         help='Comment provided by the approver')
