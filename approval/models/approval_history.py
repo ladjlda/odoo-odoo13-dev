@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
+
+from devodoo.module_dev.my_tools.my_tools import create_default_tracking_write
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class ApprovalHistory(models.Model):
@@ -70,7 +75,9 @@ class ApprovalHistory(models.Model):
     def create(self, vals_list):
         print(vals_list)
         vals_list['is_lock'] = True
+
         res = super(ApprovalHistory, self).create(vals_list)
+
         res._check_approval_item_ids_is_sequence()
         return res
 
@@ -79,11 +86,28 @@ class ApprovalHistory(models.Model):
     # [0, 'virtual_684', {'sequence': 2, 'approval_thread_id': False, 'approval_history_id': False, 'role': '初审', 'group_ids': [[6, False, [10, 11]]], 'user_ids': [[6, False, [2]]], 'approval_comment': '1234556'}]]}
     def write(self, vals):
         print(vals)
-        # if 'is_rule_sequence' in vals.keys() and vals['is_rule_sequence']:
-        #     self._check_approval_item_ids_is_sequence()
+
+        r_tracking = create_default_tracking_write(self=self, tracking_title='Approval Flow', vals=vals,
+                                                   ignore_fields=['is_lock', 'res_model','res_id','approval_item_ids'])
+
         res = super(ApprovalHistory, self).write(vals)
+
         if self.is_rule_sequence:
             self._check_approval_item_ids_is_sequence()
+
+        if res and r_tracking and self.res_model and self.res_id:
+            target_record = self.env[self.res_model].browse([self.res_id])
+            if target_record:
+                try:
+                    target_record.message_post(body=_(r_tracking))
+                    self.message_post(body=_(r_tracking))
+                    msg = 'default tracking: (origin_model: \'{}\', origin_id: {}, target_model: \'{}\', target_id: {}, mess: \'{}\')'.format(
+                        self._name, self.id, self.approval_history_id.res_model, self.approval_history_id.res_id,
+                        r_tracking)
+                    _logger.debug(msg)
+                except:
+                    pass
+
         return res
 
 
@@ -96,13 +120,12 @@ class ApprovalItem(models.Model):
     _description = "Approval Stage"
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'sequence, id'
-    _rec_name = 'sequence'
 
-    approval_thread_id = fields.Many2one(
-        comodel_name='approval.thread',
-        string='Approval Thread',
-        ondelete='cascade',
-        help='Related approval thread record')
+    # approval_thread_id = fields.Many2one(
+    #     comodel_name='approval.thread',
+    #     string='Approval Thread',
+    #     ondelete='cascade',
+    #     help='Related approval thread record')
 
     approval_history_id = fields.Many2one(
         comodel_name='approval.history',
@@ -166,6 +189,12 @@ class ApprovalItem(models.Model):
 
     # 审批时间
     approval_date = fields.Datetime(string='Approval Date', readonly=True, tracking=True)
+
+    def name_get(self):
+        res = []
+        for rec in self:
+            res.append((rec.id, "{} / {}-{}".format(rec.approval_history_id.display_name, rec.sequence, rec.role)))
+        return res
 
     def _compute_is_authorized_approval(self):
         for rec in self:
@@ -255,9 +284,65 @@ class ApprovalItem(models.Model):
             'context': {'default_approval_opinion': self.approval_opinion}
         }
 
+    @api.model
+    def create(self, vals_list):
+        res = super(ApprovalItem, self).create(vals_list)
+
+        if res and res.approval_history_id.res_model and res.approval_history_id.res_id:
+                target_record = self.env[res.approval_history_id.res_model].browse([res.approval_history_id.res_id])
+                if target_record:
+                    r_tracking = '<span> A new item has been added to the approval process: {}'.format(res.display_name)
+                    msg = 'default tracking: (origin_model: \'{}\', origin_id: {}, target_model: \'{}\', target_id: {}, mess: \'{}\')'.format(
+                        self._name, self.id, self.approval_history_id.res_model, self.approval_history_id.res_id,
+                        r_tracking)
+                    try:
+                        target_record.message_post(body=_(r_tracking))
+                        _logger.debug(msg)
+                    except:
+                        pass
+
+        return res
+
     def write(self, vals):
         print('条目更新', vals)
 
+        # 对字段的变化值整理发送到approval.thread的子类表单消息区中
+        r_tracking = create_default_tracking_write(self=self, tracking_title='Approval Flow Item', vals=vals,
+                                             ignore_fields=['approval_history_id', 'approval_thread_id'],
+                                             fields_mapped={'group_ids': 'full_name', 'user_ids': 'name'})
+
         res = super(ApprovalItem, self).write(vals)
 
+        if res and r_tracking and self.approval_history_id.res_model and self.approval_history_id.res_id:
+            target_record = self.env[self.approval_history_id.res_model].browse([self.approval_history_id.res_id])
+            if target_record:
+                try:
+                    target_record.message_post(body=_(r_tracking))
+                    self.message_post(body=_(r_tracking))
+                    msg = 'default tracking: (origin_model: \'{}\', origin_id: {}, target_model: \'{}\', target_id: {}, mess: \'{}\')'.format(
+                        self._name, self.id, self.approval_history_id.res_model, self.approval_history_id.res_id,
+                        r_tracking)
+                    _logger.debug(msg)
+                except:
+                    pass
         return res
+
+    def unlink(self):
+        if self.approval_history_id.res_model and self.approval_history_id.res_id:
+            target_record = self.env[self.approval_history_id.res_model].browse([self.approval_history_id.res_id])
+            if target_record:
+                r_tracking = '<span> Approval Flow Item has been Changed: {}</span><br><span> Deleted</span>'.format(
+                    self.display_name)
+                msg = 'default tracking: (origin_model: \'{}\', origin_id: {}, target_model: \'{}\', target_id: {}, mess: \'{}\')'.format(
+                    self._name, self.id, self.approval_history_id.res_model, self.approval_history_id.res_id,
+                    r_tracking)
+                res = super(ApprovalItem, self).unlink()
+                if res:
+                    try:
+                        target_record.message_post(body=_(r_tracking))
+                        _logger.debug(msg)
+                    except:
+                        pass
+                return res
+
+        return super(ApprovalItem, self).unlink()

@@ -18,6 +18,8 @@
                 <header>
                 </header>
                 <sheet>
+<!--                    <t t-call="approval.approval-flow-panel"/>-->
+
                     <group>
                         <field name="name"/>
                         <field name="approval_history_id" options="{'no_create':True}"/>
@@ -84,7 +86,7 @@
                             <div>
                                 <button type="object"
                                         string="修改"
-                                        name="action_self_by_wizard"
+                                        name="action_modify_history_wizard"
                                         class="btn btn-primary o_form_button_edit"
                                         groups="base.group_no_one"
                                 />

@@ -11,10 +11,8 @@ class ApprovalThread(models.AbstractModel):
     _name = "approval.thread"
     _description = "Approval Thread"
 
-    is_wizard = fields.Boolean(string='向导模式', default=False)
-
     target_id = fields.Integer(compute='_compute_target_ref')
-    target_model = fields.Char(compute='_compute_target_ref')
+    target_model = fields.Char()
 
     # 设置的审批流程是否都通过，由计算方法得到，全部通过才为True
     approval_is_passed = fields.Boolean(
@@ -90,19 +88,16 @@ class ApprovalThread(models.AbstractModel):
         """
         for rec in self:
             # 获取最新创建的approval.history记录
-            # latest_history = record.approval_history_ids.sorted('create_date desc')[:1]
-            latest_history = rec.approval_history_id
-            # print([(6, 0, latest_history.approval_item_ids.ids)])
-            if latest_history:
+            if rec.approval_history_id:
                 # 将approval_item_ids赋值给目标字段
-                rec.approval_item_ids = [(6, 0, latest_history.approval_item_ids.ids)]
+                rec.approval_item_ids = [(6, 0, rec.approval_history_id.approval_item_ids.ids)]
             else:
                 rec.approval_item_ids = False
 
-    @api.model
-    def create(self, vals_list):
-        for one_vals in vals_list:
-            print(one_vals)
+    # @api.model
+    # def create(self, vals_list):
+    #     for one_vals in vals_list:
+    #         print(one_vals)
 
     # ------------------------------------------------------
     # History API
@@ -111,7 +106,7 @@ class ApprovalThread(models.AbstractModel):
         self.ensure_one()
         return self._compute_approval_item_ids()
 
-    def action_self_by_wizard(self):
+    def action_modify_history_wizard(self):
         self.ensure_one()
         if not self.approval_history_id:
             raise UserError(_('请选择 Approval History'))

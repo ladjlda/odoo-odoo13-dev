@@ -33,7 +33,6 @@
                                groups="base.group_no_one"/>
                         <field name="is_rule_sequence" attrs="{'readonly':[('is_lock','=',True)]}"/>
                         <field name="approval_comment" attrs="{'readonly':[('is_lock','=',True)]}"/>
-
                     </group>
                     <field name="approval_item_ids" attrs="{'readonly':[('is_lock','=',True)]}">
                         <tree order="sequence asc" editable="bottom">

@@ -22,7 +22,7 @@
         'python': [],
         'bin': [],
     },
-    'qweb': [],
+    'qweb': ['static/src/xml/*.xml'],
     'js': [],
     'css': [],
     'images': [],
