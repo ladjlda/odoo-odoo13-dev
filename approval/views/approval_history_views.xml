@@ -5,7 +5,9 @@
         <field name="model">approval.history</field>
         <field name="arch" type="xml">
             <tree>
+                <field name="sequence" widget="handle"/>
                 <field name="reference"/>
+                <field name="name"/>
                 <field name="res_model" groups="base.group_no_one" optional="hide"/>
                 <field name="res_id" groups="base.group_no_one" optional="hide"/>
                 <field name="is_rule_sequence"/>
@@ -22,9 +24,10 @@
             <form>
                 <sheet>
                     <group>
-                        <field name="is_lock"/>
+                        <field name="is_lock" groups="base.group_no_one"/>
                         <field name="name" attrs="{'readonly':[('is_lock','=',True)]}"/>
-                        <field name="reference" attrs="{'readonly':[('is_lock','=',True)]}"/>
+                        <field name="sequence" attrs="{'readonly':[('is_lock','=',True)]}"/>
+                        <field name="reference"/>
                         <field name="res_id"
                                attrs="{'invisible':[('is_lock','=',False)], 'readonly':[('is_lock','=',True)]}"
                                groups="base.group_no_one"/>
@@ -129,7 +132,7 @@
         <field name="view_mode">tree,form</field>
     </record>
 
-    <menuitem id="main_menu_approval_history" name="Approval"/>
+    <menuitem id="main_menu_approval_history" name="Approval" groups="approval.group_manager"/>
 
     <menuitem id="menu_approval_history" name="Approval History"
               parent="main_menu_approval_history"

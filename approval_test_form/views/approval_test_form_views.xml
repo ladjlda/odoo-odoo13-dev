@@ -16,94 +16,116 @@
         <field name="arch" type="xml">
             <form>
                 <header>
+                    <field name="state" widget="statusbar" options="{'clickable': 1}"/>
                 </header>
                 <sheet>
-<!--                    <t t-call="approval.approval-flow-panel"/>-->
-
+                    <div name="button_box" class="oe_button_box">
+                        <button type="object"
+                                string="显示审批"
+                                name="visible_approval_flow_panel"
+                                class="oe_stat_button"
+                                icon="fa-file-code-o"
+                                attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=',True)]}"/>
+                        <button type="object"
+                                string="隐藏审批"
+                                name="visible_approval_flow_panel"
+                                class="oe_stat_button"
+                                icon="fa-file-code-o"
+                                attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=',False)]}"/>
+                    </div>
+                    <templates attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=',False)]}">
+                        <notebook>
+                            <page string="审批流程">
+                                 <group>
+                                    <field name="approval_is_passed" groups="base.group_no_one"/>
+                                    <field name="approval_history_id" options="{'no_create':True}" groups="base.group_no_one"/>
+                                    <field name="approval_comment"/>
+                                </group>
+                                <field name="approval_item_ids">
+                                    <tree order="sequence asc" editable="bottom" create="0" delete="0"
+                                          decoration-success="approval_status == 'approved'"
+                                          decoration-info="approval_status == 'pending'"
+                                          decoration-warning="approval_status == 'rejected'">
+                                        <field name="sequence" readonly="1"/>
+                                        <field name="role" readonly="1"/>
+                                        <field name="group_ids" readonly="1" widget="many2many_tags"/>
+                                        <field name="user_ids" readonly="1" widget="many2many_tags"/>
+                                        <field name="is_authorized_approval" optional="hide"/>
+                                        <field name="approval_opinion" class="o_column_sortable2" readonly="1"
+                                               attrs="{'readonly':[('is_authorized_approval','=', False)]}"/>
+                                        <field name="approval_status"/>
+                                        <field name="user_id"/>
+                                        <field name="approval_date"/>
+                                        <button type="object"
+                                                string="approval"
+                                                name="action_approve"
+                                                class="btn btn-success o_form_button_edit"
+                                                attrs="{'invisible':['|',('is_authorized_approval','=', False),('approval_status','=','approved')]}"
+                                        />
+                                        <button type="object"
+                                                string="pending"
+                                                name="action_pending"
+                                                class="btn btn-info o_form_button_edit"
+                                                attrs="{'invisible':['|',('is_authorized_approval','=', False),('approval_status','=','pending')]}"
+                                        />
+                                        <button type="object"
+                                                string="reject"
+                                                name="action_reject"
+                                                class="btn btn-warning o_form_button_edit"
+                                                attrs="{'invisible':['|',('is_authorized_approval','=', False),('approval_status','=','rejected')]}"
+                                        />
+                                        <button type="object"
+                                                string="opinion"
+                                                name="action_set_opinion"
+                                                class="btn btn-primary o_form_button_edit"
+                                                attrs="{'invisible':['|',('is_authorized_approval','=', False),('approval_status','!=','pending')]}"
+                                        />
+                                    </tree>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <field name="sequence"/>
+                                                <field name="role"/>
+                                                <field name="group_ids" widget="many2many_tags"/>
+                                                <field name="user_ids" widget="many2many_tags"/>
+                                                <field name="approval_status"/>
+                                                <field name="approval_opinion" readonly="1"/>
+                                                <field name="user_id"/>
+                                                <field name="approval_date"/>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                                <div>
+                                    <button type="object"
+                                            string="修改"
+                                            name="action_modify_history_wizard"
+                                            class="btn btn-primary o_form_button_edit"
+                                            groups="approval.group_editor"
+                                    />
+                                    <button type="object"
+                                            string="更新流程"
+                                            name="action_update_approval_item_ids"
+                                            class="btn btn-primary o_form_button_edit mx-2"
+                                            groups="approval.group_editor"
+                                    />
+                                </div>
+                            </page>
+                            <page string="阶段审批">
+                                 <group groups="base.group_no_one">
+                                    <field name="is_show"/>
+                                    <field name="stage_field"/>
+                                    <field name="flow_current_state"/>
+                                    <field name="target_id" force_save="1"/>
+                                    <field name="target_model" readonly="1" force_save="1"/>
+                                </group>
+                                <field name="approval_history_ids" context="{'default_res_model':target_model}"/>
+                            </page>
+                        </notebook>
+                    </templates>
                     <group>
                         <field name="name"/>
-                        <field name="approval_history_id" options="{'no_create':True}"/>
-                        <field name="approval_is_passed"/>
-                        <field name="approval_comment"/>
                     </group>
-                    <notebook>
-                        <page string="审批流程">
-                            <field name="approval_item_ids">
-                                <tree order="sequence asc" editable="bottom" create="0" delete="0"
-                                      decoration-success="approval_status == 'approved'"
-                                      decoration-info="approval_status == 'pending'"
-                                      decoration-warning="approval_status == 'rejected'">
-                                    <field name="sequence" readonly="1"/>
-                                    <field name="role" readonly="1"/>
-                                    <field name="group_ids" readonly="1" widget="many2many_tags"/>
-                                    <field name="user_ids" readonly="1" widget="many2many_tags"/>
-                                    <field name="is_authorized_approval" optional="hide"/>
-                                    <field name="approval_opinion" class="o_column_sortable2" readonly="1"
-                                           attrs="{'readonly':[('is_authorized_approval','=', False)]}"/>
-                                    <field name="approval_status"/>
-                                    <field name="user_id"/>
-                                    <field name="approval_date"/>
-                                    <button type="object"
-                                            string="approval"
-                                            name="action_approve"
-                                            class="btn btn-success o_form_button_edit"
-                                            attrs="{'invisible':['|',('approval_status','=','approved'),('is_authorized_approval','=', False)]}"
-                                    />
-                                    <button type="object"
-                                            string="pending"
-                                            name="action_pending"
-                                            class="btn btn-info o_form_button_edit"
-                                            attrs="{'invisible':['|',('approval_status','=','pending'),('is_authorized_approval','=', False)]}"
-                                    />
-                                    <button type="object"
-                                            string="reject"
-                                            name="action_reject"
-                                            class="btn btn-warning o_form_button_edit"
-                                            attrs="{'invisible':['|',('approval_status','=','rejected'),('is_authorized_approval','=', False)]}"
-                                    />
-                                    <button type="object"
-                                            string="opinion"
-                                            name="action_set_opinion"
-                                            class="btn btn-primary o_form_button_edit"
-                                            attrs="{'invisible':['|',('approval_status','!=','pending'),('is_authorized_approval','=', False)]}"
-                                    />
-                                </tree>
-                                <form>
-                                    <sheet>
-                                        <group>
-                                            <field name="sequence"/>
-                                            <field name="role"/>
-                                            <field name="group_ids" widget="many2many_tags"/>
-                                            <field name="user_ids" widget="many2many_tags"/>
-                                            <field name="approval_status"/>
-                                            <field name="approval_opinion" readonly="1"/>
-                                            <field name="user_id"/>
-                                            <field name="approval_date"/>
-                                        </group>
-                                    </sheet>
-                                </form>
-                            </field>
-                            <div>
-                                <button type="object"
-                                        string="修改"
-                                        name="action_modify_history_wizard"
-                                        class="btn btn-primary o_form_button_edit"
-                                        groups="base.group_no_one"
-                                />
-                                <button type="object"
-                                        string="更新流程"
-                                        name="action_update_approval_item_ids"
-                                        class="btn btn-primary o_form_button_edit mx-2"
-                                        groups="base.group_no_one"
-                                />
-                            </div>
-                        </page>
-                        <page string="阶段审批">
-                            <field name="target_id" invisible="1" force_save="1"/>
-                            <field name="target_model" invisible="1" force_save="1"/>
-                            <field name="approval_history_ids" context="{'default_res_model':target_model}"/>
-                        </page>
-                    </notebook>
                 </sheet>
                 <div class="oe_chatter">
                     <field name="message_follower_ids" widget="mail_followers"/>
@@ -118,6 +140,7 @@
         <field name="name">Approval Test Form</field>
         <field name="res_model">approval.test.form</field>
         <field name="view_mode">tree,form</field>
+        <field name="context">{'default_is_show':False}</field>
     </record>
 
     <menuitem id="main_menu_approval_test_form" name="Approval Test Form"/>

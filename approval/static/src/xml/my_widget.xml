@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="MyWidgetTemplate">
+        <div class="my-widget-container">
+<!--            <span t-esc="value" style="color: <t t-esc='color'/>; font-weight: bold;"/>-->
+<!--            <i class="fa fa-check ml-2" t-if="value.length > 3"/>-->
+            <span>123999</span>
+        </div>
+    </t>
+</templates>

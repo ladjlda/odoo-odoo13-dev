@@ -16,9 +16,23 @@ class ApprovalHistory(models.Model):
     _name = "approval.history"
     _description = "Approval History"
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'sequence'
+
+    # @api.model
+    # def _get_state_list(self):
+    #     self.ensure_one()
+    #     res_rec = self.env[self.res_model].browse([self.res_id])
+    #     if res_rec and res_rec.stage_field:
+    #         selection = []
+    #         for i in self.env[self.res_model].fields_get()[res_rec.stage_field]['selection']:
+    #             if i[0].startswith('aflow') and isinstance(eval(i[0][5:]), int):
+    #                 selection.append(i)
+    #         return selection
 
     is_lock = fields.Boolean(string='Locked', default=False, readonly=True, tracking=True,
                              help="创建后上锁，无法修改任何数据")
+
+    sequence = fields.Integer(string='Sequence', default=1, required=True)
 
     reference = fields.Char(
         string='Reference',
@@ -225,11 +239,10 @@ class ApprovalItem(models.Model):
         """
         current_user = self.env.user
         # 检查用户是否在user_ids中
-        user_check = current_user in self.user_ids
+        user_check = current_user.id in self.user_ids.ids
         # 使用has_group方法检查用户是否属于任何授权群组
         group_check = any(current_user.id in g.users.ids for g in self.group_ids)
-
-        return user_check or group_check or not (user_check and group_check)
+        return user_check or group_check or (not self.user_ids and not self.group_ids)
 
     def _update_approval_status(self, status):
         """
