@@ -2,6 +2,6 @@
 "access_approval_history_user","approval.history user","model_approval_history","group_user",1,0,0,0
 "access_approval_history_editor","approval.history editor","model_approval_history","group_editor",1,1,1,1
 
-"access_approval_item_user","approval.item user","model_approval_item","group_user",1,0,0,0
+"access_approval_item_user","approval.item user","model_approval_item","group_user",1,1,0,0
 "access_approval_item_editor","approval.item editor","model_approval_item","group_editor",1,1,1,1
 

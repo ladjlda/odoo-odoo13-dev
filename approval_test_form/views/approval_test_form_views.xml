@@ -19,26 +19,42 @@
                     <field name="state" widget="statusbar" options="{'clickable': 1}"/>
                 </header>
                 <sheet>
-                    <div name="button_box" class="oe_button_box">
-                        <button type="object"
-                                string="显示审批"
-                                name="visible_approval_flow_panel"
-                                class="oe_stat_button"
-                                icon="fa-file-code-o"
-                                attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=',True)]}"/>
-                        <button type="object"
-                                string="隐藏审批"
-                                name="visible_approval_flow_panel"
-                                class="oe_stat_button"
-                                icon="fa-file-code-o"
-                                attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=',False)]}"/>
-                    </div>
-                    <templates attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=',False)]}">
-                        <notebook>
+<!--                    <div name="button_box" class="oe_button_box">-->
+<!--                        <button type="object"-->
+<!--                                string="显示审批"-->
+<!--                                name="visible_approval_flow_panel"-->
+<!--                                class="oe_stat_button"-->
+<!--                                icon="fa-file-code-o"-->
+<!--                                attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=', True)]}"/>-->
+<!--                        <button type="object"-->
+<!--                                string="隐藏审批"-->
+<!--                                name="visible_approval_flow_panel"-->
+<!--                                class="oe_stat_button"-->
+<!--                                icon="fa-file-code-o"-->
+<!--                                attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=', False)]}"/>-->
+<!--                    </div>-->
+                    <templates>
+                        <div class="d-flex flex-row-reverse bd-highlight">
+                            <button type="object"
+                                    string="显示审批"
+                                    name="visible_approval_flow_panel"
+                                    class="btn-primary o_form_button_edit"
+                                    icon="fa-file-code-o"
+                                    attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=', True)]}"/>
+                            <button type="object"
+                                    string="隐藏审批"
+                                    name="visible_approval_flow_panel"
+                                    class="btn-primary o_form_button_edit "
+                                    icon="fa-file-code-o"
+                                    attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=', False)]}"/>
+                        </div>
+                        <notebook
+                                attrs="{'invisible':['|',('state','in',['draft','open','close']),('is_show','=', False)]}">
                             <page string="审批流程">
-                                 <group>
+                                <group>
                                     <field name="approval_is_passed" groups="base.group_no_one"/>
-                                    <field name="approval_history_id" options="{'no_create':True}" groups="base.group_no_one"/>
+                                    <field name="approval_history_id" options="{'no_create':True}"
+                                           groups="base.group_no_one"/>
                                     <field name="approval_comment"/>
                                 </group>
                                 <field name="approval_item_ids">
@@ -111,8 +127,8 @@
                                     />
                                 </div>
                             </page>
-                            <page string="阶段审批">
-                                 <group groups="base.group_no_one">
+                            <page string="阶段审批" groups="approval.group_editor">
+                                <group groups="base.group_no_one">
                                     <field name="is_show"/>
                                     <field name="stage_field"/>
                                     <field name="flow_current_state"/>
