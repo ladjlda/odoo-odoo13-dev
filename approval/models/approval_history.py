@@ -101,8 +101,8 @@ class ApprovalHistory(models.Model):
     def write(self, vals):
         print(vals)
 
-        r_tracking = create_default_tracking_write(self=self, tracking_title='Approval Flow', vals=vals,
-                                                   ignore_fields=['is_lock', 'res_model','res_id','approval_item_ids'])
+        r_tracking = create_default_tracking_write(self=self, vals=vals, tracking_title='Approval Flow',
+                                                   ignore_fields=['is_lock', 'res_model', 'res_id', 'approval_item_ids'])
 
         res = super(ApprovalHistory, self).write(vals)
 
@@ -193,6 +193,11 @@ class ApprovalItem(models.Model):
     ], string='Approval Status', default='pending',
         readonly=True, tracking=True)
 
+    kanban_state = fields.Selection(selection=[
+        ("normal", "Pending"),
+        ("done", "Approved"),
+        ("blocked", "Rejected")],compute='_compute_kanban_state')
+
     # 审批人
     user_id = fields.Many2one(
         comodel_name='res.users',
@@ -209,6 +214,15 @@ class ApprovalItem(models.Model):
         for rec in self:
             res.append((rec.id, "{} / {}-{}".format(rec.approval_history_id.display_name, rec.sequence, rec.role)))
         return res
+
+    def _compute_kanban_state(self):
+        for rec in self:
+            if rec.approval_status == 'approved':
+                rec.kanban_state = 'done'
+            elif rec.approval_status == 'rejected':
+                rec.kanban_state = 'blocked'
+            else:
+                rec.kanban_state = 'normal'
 
     def _compute_is_authorized_approval(self):
         for rec in self:
@@ -304,7 +318,7 @@ class ApprovalItem(models.Model):
         if res and res.approval_history_id.res_model and res.approval_history_id.res_id:
                 target_record = self.env[res.approval_history_id.res_model].browse([res.approval_history_id.res_id])
                 if target_record:
-                    r_tracking = '<span> A new item has been added to the approval process: {}'.format(res.display_name)
+                    r_tracking = '<span> Approval Flow Item has been Changed:</span><br><span>&nbsp;&nbsp;&nbsp;A new item has been added to the approval process: {}</span> '.format(res.display_name)
                     msg = 'default tracking: (origin_model: \'{}\', origin_id: {}, target_model: \'{}\', target_id: {}, mess: \'{}\')'.format(
                         self._name, self.id, self.approval_history_id.res_model, self.approval_history_id.res_id,
                         r_tracking)
@@ -344,7 +358,7 @@ class ApprovalItem(models.Model):
         if self.approval_history_id.res_model and self.approval_history_id.res_id:
             target_record = self.env[self.approval_history_id.res_model].browse([self.approval_history_id.res_id])
             if target_record:
-                r_tracking = '<span> Approval Flow Item has been Changed: {}</span><br><span> Deleted</span>'.format(
+                r_tracking = '<span> Approval Flow Item has been Changed: {}</span><br><span>&nbsp;&nbsp;&nbsp;Deleted</span>'.format(
                     self.display_name)
                 msg = 'default tracking: (origin_model: \'{}\', origin_id: {}, target_model: \'{}\', target_id: {}, mess: \'{}\')'.format(
                     self._name, self.id, self.approval_history_id.res_model, self.approval_history_id.res_id,

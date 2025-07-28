@@ -6,13 +6,14 @@
         <field name="description">Access the permission groups of each function under the Approval module.</field>
     </record>
 
+<!--    只读-->
     <record id="group_user" model="res.groups">
         <field name="name">Viewer</field>
         <field name="category_id" ref="module_approval"/>
         <field name="implied_ids"  eval="[(4, ref('base.group_user'))]"/>
         <field name="comment">This group can readonly.</field>
     </record>
-
+<!--可以修改，但是进不了tree，只能在继承的子模型中使用-->
     <record id="group_editor" model="res.groups">
         <field name="name">Editor</field>
         <field name="category_id" ref="module_approval"/>
