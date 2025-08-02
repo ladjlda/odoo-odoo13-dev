@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <menuitem id="main_menu_runtime_actuator" name="Runtime Actuator" groups="base.group_system"/>
+
+</odoo>

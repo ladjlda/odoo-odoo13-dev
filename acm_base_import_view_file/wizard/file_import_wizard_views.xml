@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <record id="acm_base_import_view_file_wizard_action" model="ir.actions.act_window">
+        <field name="name">acm_base file import wizard</field>
+        <field name="res_model">acm_base.import_view_file_wizard</field>
+        <field name="target">new</field>
+        <field name="view_mode">form</field>
+    </record>
+
+    <record id="acm_base_import_view_file_wizard_view_form" model="ir.ui.view">
+        <field name="name">acm_base file import wizard form</field>
+        <field name="model">acm_base.import_view_file_wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <h1>Import file</h1>
+                    <group>
+                        <group>
+                            <field name="import_file" filename="import_file_name" widget="binary"/>
+                            <field name="import_file_name" invisible="1"/>
+                            <field name="name"/>
+                            <field name="key"/>
+                            <field name="priority"/>
+                            <field name="type"/>
+                            <field name="mode"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="struct">
+                            <field name="arch_db"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_import"
+                        string="import"
+                        type="object" 
+                        class="btn-primary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<odoo>
+    <record id="acm_base_delete_view_file_wizard_action" model="ir.actions.act_window">
+        <field name="name">acm_base delete view file wizard</field>
+        <field name="res_model">acm_base.delete_view_file_wizard</field>
+        <field name="target">new</field>
+        <field name="view_mode">form</field>
+    </record>
+
+    <record id="acm_base_delete_view_file_wizard_view_form" model="ir.ui.view">
+        <field name="name">acm_base delete file wizard form</field>
+        <field name="model">acm_base.delete_view_file_wizard</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <h2>Delete view</h2>
+                    <group>
+                    </group>
+                    <notebook>
+                        <page string="imported view">
+                            <field name="view_ids"
+                                   widget="section_and_note_one2many"
+                                   mode="tree">
+                                <tree create="0" edit="0">
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="key"/>
+                                    <field name="create_uid"/>
+                                    <field name="create_date"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    <footer>
+                        <button name="refresh_view_ids"
+                                string="refresh"
+                                type="object"
+                                class="btn btn-primary"/>
+                        <button name="delete_actions"
+                                string="save"
+                                type="object"
+                                class="btn btn-success"
+                                confirm="Confirm the deletion of the view record?"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>
